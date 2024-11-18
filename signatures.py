@@ -1,3 +1,7 @@
 file_signatures = {
     "png": b"\x89\x50\x4E\x47",
+    'txt': b'\x74\x65\x78\x74',
+    'jpg': b'\xFF\xD8\xFF',
+    'zip': b'\x50\x4B\x03\x04',
+    'py': b'\x23\x21\x2F\x75',
 }
