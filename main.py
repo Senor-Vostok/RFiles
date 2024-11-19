@@ -10,6 +10,7 @@ class RecoveryApp(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
+        self.start = False
 
     def init_ui(self):
         self.setWindowTitle("File Recovery App")
@@ -94,10 +95,32 @@ class RecoveryApp(QWidget):
 
     def start_recovery(self):
         selected = [(i.text())[1:] for i in self.file_types_checkboxes if i.isChecked()]
-        print(selected)
         selected_disk = self.disks_list.selectedItems()[0].text()
-        rec = Recover(fr'\\.\{selected_disk}', self.recovery_path_input.text(), selected)
-        rec.scan_signatures(self.progress_bar, self.progress_label, self.log_text)
+        if selected_disk in (self.recovery_path_input.text())[:len(selected_disk)]:
+            error_msg = QMessageBox()
+            error_msg.setIcon(QMessageBox.Critical)
+            error_msg.setWindowTitle("Ошибка")
+            error_msg.setText("Нельзя восстанавливать в сканируемую директорию")
+            error_msg.exec_()
+            return
+        self.start = not self.start
+        if self.start:
+            self.start_button.setText('Стоп')
+            self.rec = Recover(fr'\\.\{selected_disk}', self.recovery_path_input.text(), selected)
+            self.rec.scan_signatures(self.progress_bar, self.progress_label, self.log_text)
+        else:
+            self.start_button.setText('Старт')
+            try:
+                self.rec.close = True
+            except Exception:
+                pass
+
+    def closeEvent(self, event):
+        try:
+            self.rec.close = True
+        except Exception:
+            pass
+        event.accept()
 
 
 if __name__ == "__main__":

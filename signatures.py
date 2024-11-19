@@ -4,4 +4,7 @@ file_signatures = {
     'jpg': b'\xFF\xD8\xFF',
     'zip': b'\x50\x4B\x03\x04',
     'py': b'\x23\x21\x2F\x75',
+    'mp4': b'\x66\x74\x79\x70',
+    'mp3': b'\x49\x44\x33',
+    'bmp': b'\x42\x4D'
 }

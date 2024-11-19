@@ -7,7 +7,7 @@ import zipfile
 
 
 class Recover:
-    def __init__(self, path, out_path, choice_signatures=None):
+    def __init__(self, path, out_path, choice_signatures):
         self.CLUSTER_SIZE = 4096
         self.img = pytsk3.Img_Info(path)
         self.seen_hashes = set()
@@ -19,6 +19,7 @@ class Recover:
             self.signatures = signatures
         print(self.signatures)
         self.out_path = out_path
+        self.close = False
 
     def type_of_zip(self, filepath):
         with zipfile.ZipFile(filepath, 'r') as archive:
@@ -44,7 +45,7 @@ class Recover:
         recovered_files = []
         cluster_number = 0
 
-        while True:
+        while not self.close:
             try:
                 offset = cluster_number * self.CLUSTER_SIZE
                 cluster_data = self.img.read(offset, self.CLUSTER_SIZE)
@@ -58,8 +59,8 @@ class Recover:
                     file_data = cluster_data
                     next_cluster = cluster_number + 1
                     enter_time = datetime.now()
-                    while True:
-                        if (datetime.now() - enter_time).seconds > 10:
+                    while not self.close:
+                        if (datetime.now() - enter_time).seconds > 3:
                             print('Файл фрагментирован, восстановление будет частичным!!!')
                             log.append('Файл фрагментирован, восстановление будет частичным!!!')
                             break
@@ -67,7 +68,7 @@ class Recover:
                         next_cluster_data = self.img.read(offset, self.CLUSTER_SIZE)
                         if not next_cluster_data:
                             break
-                        if self.signature(next_cluster_data) == sign:
+                        if next_cluster_data.startswith(self.signatures[sign]):
                             print(f"Достигнута новая сигнатура в кластере {next_cluster}, завершение файла {file_name}")
                             log.append(f"Достигнута новая сигнатура в кластере {next_cluster}, завершение файла {file_name}")
                             break
@@ -83,11 +84,11 @@ class Recover:
                             with open(f'{self.out_path}/{file_name}', "wb") as f:
                                 f.write(file_data)
                     except Exception:
-                        print(f"Неизвесттный тип .zip")
-                        log.append(f"Неизвесттный тип .zip")
+                        print(f"Неизвестный тип .zip")
+                        log.append(f"Неизвестный тип .zip")
 
-                    print(f"Файл {file_name} успешно восстановлен.")
-                    log.append(f"Файл {file_name} успешно восстановлен.\n")
+                    print(f"Файл {file_name} восстановлен.")
+                    log.append(f"Файл {file_name} восстановлен.\n")
                     recovered_files.append(file_name)
             except Exception as e:
                 print(f"Ошибка при чтении кластера {cluster_number}: {e}")
