@@ -43,6 +43,7 @@ class RecoveryApp(QWidget):
         self.select_folder_button = QPushButton("Выбрать папку")
         self.select_folder_button.clicked.connect(self.select_folder)
         self.recovery_path_input.textChanged.connect(self.update_start_button)
+        recovery_path_layout.addWidget(self.recovery_path_label)
         recovery_path_layout.addWidget(self.select_folder_button)
         recovery_path_layout.addWidget(self.recovery_path_input)
 
@@ -106,8 +107,8 @@ class RecoveryApp(QWidget):
         self.start = not self.start
         if self.start:
             self.start_button.setText('Стоп')
-            self.rec = Recover(fr'\\.\{selected_disk}', self.recovery_path_input.text(), selected)
-            self.rec.scan_signatures(self.progress_bar, self.progress_label, self.log_text)
+            self.rec = Recover(fr'\\.\{selected_disk}', self.recovery_path_input.text(), selected, self)
+            self.rec.scan_signatures()
         else:
             self.start_button.setText('Старт')
             try:
